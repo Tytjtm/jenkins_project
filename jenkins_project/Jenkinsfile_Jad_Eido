@@ -12,18 +12,18 @@ pipeline {
             steps {
                 dir('jenkins_project') {
                     script {
-                        // Create virtual environment if it doesn’t exist yet
+                        // 1) Create virtual environment if it doesn’t exist yet
                         if (!fileExists("${VENV}\\Scripts\\activate.bat")) {
                             bat """
                             "%PY_EXE%" -m venv %VENV%
                             """
                         }
 
-                        // Activate venv and install requirements
+                        // 2) Use the VENV's Python + pip to install requirements
                         bat """
                         call %VENV%\\Scripts\\activate.bat
-                        "%PY_EXE%" -m pip install --upgrade pip
-                        "%PY_EXE%" -m pip install -r requirements.txt
+                        python -m pip install --upgrade pip
+                        python -m pip install -r requirements.txt
                         """
                     }
                 }
@@ -57,7 +57,7 @@ pipeline {
                 dir('jenkins_project') {
                     bat """
                     call %VENV%\\Scripts\\activate.bat
-                    "%PY_EXE%" app.py
+                    python app.py
                     """
                 }
             }
