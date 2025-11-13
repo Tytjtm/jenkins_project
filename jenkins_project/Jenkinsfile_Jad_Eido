@@ -70,12 +70,16 @@ pipeline {
             steps {
                 dir('jenkins_project') {
                     bat """
+                    chcp 65001 >NUL
+                    set PYTHONIOENCODING=utf-8
                     call %VENV%\\Scripts\\activate.bat
-                    bandit -r .
+                    bandit -r . -f txt -o bandit_report.txt
+                    type bandit_report.txt
                     """
                 }
             }
         }
+
 
         stage('Deploy') {
             steps {
