@@ -2,19 +2,26 @@ pipeline {
     agent any
 
     environment {
-        VIRTUAL_ENV = 'venv'
+        VENV = 'venv'
     }
 
     stages {
+
         stage('Setup') {
             steps {
                 script {
-                    if (!fileExists("${env.WORKSPACE}/${VIRTUAL_ENV}")) {
-                        sh "python -m venv ${VIRTUAL_ENV}"
+                    // Create virtual environment if it doesn’t exist
+                    if (!fileExists("${env.WORKSPACE}\\${VENV}\\Scripts\\activate.bat")) {
+                        bat """
+                        python -m venv %VENV%
+                        """
                     }
-                    sh """
-                        source ${VIRTUAL_ENV}/bin/activate && \
-                        pip install -r requirements.txt
+
+                    // Activate venv and install requirements
+                    bat """
+                    call %VENV%\\Scripts\\activate.bat
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
                     """
                 }
             }
@@ -22,32 +29,28 @@ pipeline {
 
         stage('Lint') {
             steps {
-                script {
-                    sh """
-                        source ${VIRTUAL_ENV}/bin/activate && \
-                        flake8 app.py
-                    """
-                }
+                bat """
+                call %VENV%\\Scripts\\activate.bat
+                flake8 app.py
+                """
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    sh """
-                        source ${VIRTUAL_ENV}/bin/activate && \
-                        pytest
-                    """
-                }
+                bat """
+                call %VENV%\\Scripts\\activate.bat
+                pytest
+                """
             }
         }
 
         stage('Deploy') {
             steps {
-                script {
-                    echo "Deploying application..."
-                    // Here you can run a script or copy files
-                }
+                bat """
+                call %VENV%\\Scripts\\activate.bat
+                python app.py
+                """
             }
         }
     }
