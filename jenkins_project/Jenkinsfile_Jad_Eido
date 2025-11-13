@@ -3,25 +3,23 @@ pipeline {
 
     environment {
         VENV = 'venv'
+        PY_EXE = 'C:\Users\k\AppData\Local\Programs\Python\Python313\python.exe'
     }
 
     stages {
-
         stage('Setup') {
             steps {
                 script {
-                    // Create virtual env if it doesn’t exist
                     if (!fileExists("${env.WORKSPACE}\\${VENV}\\Scripts\\activate.bat")) {
                         bat """
-                        py -3 -m venv %VENV%
+                        "%PY_EXE%" -m venv %VENV%
                         """
                     }
 
-                    // Activate venv and install requirements using the venv's python
                     bat """
                     call %VENV%\\Scripts\\activate.bat
-                    python -m pip install --upgrade pip
-                    python -m pip install -r requirements.txt
+                    "%PY_EXE%" -m pip install --upgrade pip
+                    "%PY_EXE%" -m pip install -r requirements.txt
                     """
                 }
             }
@@ -49,7 +47,7 @@ pipeline {
             steps {
                 bat """
                 call %VENV%\\Scripts\\activate.bat
-                python app.py
+                "%PY_EXE%" app.py
                 """
             }
         }
@@ -61,4 +59,3 @@ pipeline {
         }
     }
 }
-
