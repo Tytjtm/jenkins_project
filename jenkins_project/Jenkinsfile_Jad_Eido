@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
+        // Name of the virtual environment folder (inside jenkins_project)
         VENV   = 'venv'
+        // Absolute path to your Python executable (adjust if different)
         PY_EXE = 'C:\\Users\\k\\AppData\\Local\\Programs\\Python\\Python313\\python.exe'
     }
 
@@ -12,14 +14,14 @@ pipeline {
             steps {
                 dir('jenkins_project') {
                     script {
-                        // 1) Create virtual environment if it doesn’t exist yet
+                        // 1) Create virtual environment if it doesn’t exist
                         if (!fileExists("${VENV}\\Scripts\\activate.bat")) {
                             bat """
                             "%PY_EXE%" -m venv %VENV%
                             """
                         }
 
-                        // 2) Use the VENV's Python + pip to install requirements
+                        // 2) Activate venv and install dependencies into the venv
                         bat """
                         call %VENV%\\Scripts\\activate.bat
                         python -m pip install --upgrade pip
@@ -52,6 +54,29 @@ pipeline {
             }
         }
 
+        stage('Coverage') {
+            steps {
+                dir('jenkins_project') {
+                    bat """
+                    call %VENV%\\Scripts\\activate.bat
+                    coverage run -m pytest
+                    coverage report
+                    """
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                dir('jenkins_project') {
+                    bat """
+                    call %VENV%\\Scripts\\activate.bat
+                    bandit -r .
+                    """
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
                 dir('jenkins_project') {
@@ -66,6 +91,7 @@ pipeline {
 
     post {
         always {
+            // Clean workspace after each run
             cleanWs()
         }
     }
