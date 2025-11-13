@@ -2,53 +2,64 @@ pipeline {
     agent any
 
     environment {
-        VENV = 'venv'
+        VENV   = 'venv'
         PY_EXE = 'C:\\Users\\k\\AppData\\Local\\Programs\\Python\\Python313\\python.exe'
     }
 
     stages {
+
         stage('Setup') {
             steps {
-                script {
-                    if (!fileExists("${env.WORKSPACE}\\${VENV}\\Scripts\\activate.bat")) {
+                dir('jenkins_project') {
+                    script {
+                        // Create virtual environment if it doesn’t exist yet
+                        if (!fileExists("${VENV}\\Scripts\\activate.bat")) {
+                            bat """
+                            "%PY_EXE%" -m venv %VENV%
+                            """
+                        }
+
+                        // Activate venv and install requirements
                         bat """
-                        "%PY_EXE%" -m venv %VENV%
+                        call %VENV%\\Scripts\\activate.bat
+                        "%PY_EXE%" -m pip install --upgrade pip
+                        "%PY_EXE%" -m pip install -r requirements.txt
                         """
                     }
-
-                    bat """
-                    call %VENV%\\Scripts\\activate.bat
-                    "%PY_EXE%" -m pip install --upgrade pip
-                    "%PY_EXE%" -m pip install -r requirements.txt
-                    """
                 }
             }
         }
 
         stage('Lint') {
             steps {
-                bat """
-                call %VENV%\\Scripts\\activate.bat
-                flake8 app.py
-                """
+                dir('jenkins_project') {
+                    bat """
+                    call %VENV%\\Scripts\\activate.bat
+                    flake8 app.py
+                    """
+                }
             }
         }
 
         stage('Test') {
             steps {
-                bat """
-                call %VENV%\\Scripts\\activate.bat
-                pytest
-                """
+                dir('jenkins_project') {
+                    bat """
+                    call %VENV%\\Scripts\\activate.bat
+                    pytest
+                    """
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                bat """
-                call %VENV%\\Scripts\\activate.bat
-                "%PY_EXE%" app.py
-                """
+                dir('jenkins_project') {
+                    bat """
+                    call %VENV%\\Scripts\\activate.bat
+                    "%PY_EXE%" app.py
+                    """
+                }
             }
         }
     }
