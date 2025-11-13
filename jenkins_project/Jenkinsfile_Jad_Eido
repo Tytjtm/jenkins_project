@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VENV = 'venv'
-        PY_EXE = 'C:\Users\k\AppData\Local\Programs\Python\Python313\python.exe'
+        PY_EXE = 'C:\\Users\\k\\AppData\\Local\\Programs\\Python\\Python313\\python.exe'
     }
 
     stages {
